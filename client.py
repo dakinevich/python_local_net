@@ -31,7 +31,8 @@ while True:
             print (message)
         else:
             message = sys.stdin.readline()
-            server.send(message)
+            my_str_as_bytes = str.encode(message)
+            server.send(my_str_as_bytes)
             sys.stdout.write("<You>")
             sys.stdout.write(message)
             sys.stdout.flush()
