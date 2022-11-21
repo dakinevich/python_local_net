@@ -1,40 +1,45 @@
-#server.py
-import socket
-import threading
-my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+import socket, select
+ 
+basename = "image_got.png"
+
+HOST = "192.168.1.3"
 PORT = 6045
-ADDRESS = "172.20.10.12"
-broadcast_list = []
-my_socket.bind((ADDRESS, PORT))
-def accept_loop():
-    while True:
-        my_socket.listen()
-        client, client_address = my_socket.accept()
-        broadcast_list.append(client)
-        start_listenning_thread(client)
-        
-def start_listenning_thread(client):
-    client_thread = threading.Thread(
-            target=listen_thread,
-            args=(client,)
-        )
-    client_thread.start()
-    
-def listen_thread(client):
-    while True:
-        message = client.recv(1024).decode()
-        if message:
-            print(f"Received message : {message}")
-            broadcast(message)
+
+connected_clients_sockets = []
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server_socket.bind((HOST, PORT))
+server_socket.listen(10)
+
+connected_clients_sockets.append(server_socket)
+
+while True:
+
+    read_sockets, write_sockets, error_sockets = select.select(connected_clients_sockets, [], [])
+
+    for sock in read_sockets:
+
+        if sock == server_socket:
+            
+            sockfd, client_address = server_socket.accept()
+            connected_clients_sockets.append(sockfd)
+            print("client apended")
+
         else:
-            print(f"client has been disconnected : {client}")
-            return
-        
-def broadcast(message):
-    for client in broadcast_list:
-        try:
-            client.send(message.encode())
-        except:
-            broadcast_list.remove(client)
-            print(f"Client removed : {client}")
-accept_loop()
+            sock.settimeout(0.1)
+            data = sock.recv(4096)
+            txt = data.decode()
+            tmp = txt.split()
+            size = int(tmp[1])
+            print(f"sock sended size: {size}")
+            sock.sendall(b"GOT SIZE")
+            myfile = open(basename, "wb")
+            sock.settimeout(0)
+            data = sock.recv(size)
+            myfile.write(data)
+            myfile.close()
+            sock.close()
+            connected_clients_sockets.remove(sock)
+server_socket.close()

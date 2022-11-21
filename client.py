@@ -5,7 +5,7 @@ nickname = input("Choose your nickname : ").strip()
 while not nickname:
     nickname = input("Your nickname should not be empty : ").strip()
 my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = "172.20.10.12"
+host = "172.20.10.10"
 port = 6045
 my_socket.connect((host, port))
 def thread_sending():
