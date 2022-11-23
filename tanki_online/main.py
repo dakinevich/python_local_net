@@ -45,7 +45,7 @@ def swap_thread_server():
     while True:
         local_broadcast = broadcast_list
         new_queue = [POS]
-        #time.sleep(1)
+        time.sleep(0.001) # server render starts faster
         for client in local_broadcast:
             try:
                 messange = ' '.join([f"{i[0]} {i[1]}" for i in DRAW_QUEUE])
@@ -100,7 +100,7 @@ if SERVER:
     except:
         print("PORT IS ALREADY BUSY")
         exit()
-    print("SERVER\n")
+    print("SERVER")
     pygame.display.set_caption('server')
 
     thread_game = threading.Thread(target=game_thread, daemon=True)
